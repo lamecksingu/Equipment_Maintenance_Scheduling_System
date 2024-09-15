@@ -8,13 +8,21 @@ exports.createTechnician = (data, callback) => {
 
 // Get all technicians
 exports.getAllTechnicians = (callback) => {
-    const query = 'SELECT * FROM technician';
+    const query = `
+	SELECT technician.*, user.username
+	FROM technician
+	JOIN user ON technician.user_id = user.id
+	`;
     db.query(query, callback);
 };
 
 // Get a technician by ID
 exports.getTechnicianById = (id, callback) => {
-    const query = 'SELECT * FROM technician WHERE id = ?';
+    const query = `SELECT technician.*, user.username
+    FROM technician
+    JOIN user ON technician.user_id = user.id
+    WHERE technician.id = ?
+    `;
     db.query(query, [id], (err, results) => {
 	    if (err) return callback(err);
 	    if (results.length === 0) return callback(null, null); // No technician found
