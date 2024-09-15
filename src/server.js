@@ -9,6 +9,7 @@ const siteRoutes = require('./routes/siteRoutes'); // import siteRoute
 const userRoutes = require('./routes/userRoutes'); // import userRoute
 const technicianRoutes = require('./routes/technicianRoutes'); // import technician route
 const maintenanceTaskRoutes = require('./routes/maintenanceTaskRoutes');
+const cors = require('cors');
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,9 @@ app.use(bodyParser.json());  // Parsing JSON request bodies
 app.get('/', (req, res) => {
     res.send('Welcome to the Equipment Maintenance and Scheduling System!');
 });
+
+// Enable CORS for all routes
+app.use(cors());
 
 // Register the authentication routes
 app.use('/api/auth', authRoutes);
