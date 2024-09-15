@@ -1,24 +1,34 @@
 const User = require('../models/userModel');
-const Technician = require('../models/technicianModel'); // Assuming you have a model for Technicians
+const Technician = require('../models/technicianModel'); // A model for Technicians
 const jwt = require('jsonwebtoken');
 
 // Register a new user
 exports.registerUser = (req, res) => {
-	const userData = req.body;
+	const userData = {
+		username: req.body.username,
+		email: req.body.email,
+		password: req.body.password,
+		role: req.body.role
+	};
 
 	User.register(userData, (err, result) => {
 		if (err) {
+			console.log("Error registering a user:", err);
 			res.status(500).send(err);
 		} else {
 			// If user is a technician, create an entry in the technicians table
+			console.log("User registered successfully with User Id: ", result.insertId);
 			if (userData.role === 'technician') {
 				const technicianData = {
 					user_id: result.insertId, // The ID of the newly created user
 					specialization: req.body.specialization,
-					experience_level: req.body.experience_level
+					experience_level: req.body.experience_level,
+					status: 'available', // Default status for a new technician
+					assigned_tasks: null // Default
 				};
 				Technician.createTechnician(technicianData, (techErr, techResult) => {
 					if (techErr) {
+						console.log("Error registering a technician:", techErr);
 						res.status(500).send(techErr);
 					} else {
 						res.status(201).send("Technician registered successfully!");
