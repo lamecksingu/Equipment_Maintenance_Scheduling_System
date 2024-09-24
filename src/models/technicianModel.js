@@ -30,6 +30,20 @@ exports.getTechnicianById = (id, callback) => {
     });
 };
 
+// addition for tests
+// Get technician by user ID
+exports.getTechnicianByUserId = (userId, callback) => {
+    const query = 'SELECT * FROM technician WHERE user_id = ?';
+    db.query(query, [userId], (err, results) => {
+        if (err) return callback(err);
+        if (results.length === 0) return callback(null, null); // No technician found for this user
+        callback(null, results[0]);
+    });
+};
+
+// end of addition
+
+
 // Update a technician by ID
 exports.updateTechnicianById = (id, data, callback) => {
     const query = 'UPDATE technician SET ? WHERE id = ?';
