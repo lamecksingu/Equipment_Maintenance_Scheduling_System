@@ -81,16 +81,83 @@ exports.getUserById = (req, res) => {
 	});
 };
 
+{/*
 exports.updateUserById = (req, res) => {
 	const { id } = req.params;
 	const data = req.body;
+	console.log("Updating user with ID:", id); // for debugging purpose
+	console.log("Data to update:", data); // for debugging
 	User.updateById(id, data, (err, result) => {
 		if (err) {
+			console.error("Error during update:", err); // debug
 			res.status(500).send(err);
 		} else {
+			console.log("Update result:", result); // debug
 			res.status(200).send(result);
 		}
 	});
+};
+*/}
+
+exports.updateUserById = (req, res) => {
+    const { id } = req.params;
+    const data = req.body;
+
+    // First, update the user information (in the 'users' table)
+    User.updateById(id, data, (err, result) => {
+        if (err) {
+            console.error("Error updating user:", err);
+            return res.status(500).send("Error updating user");
+        }
+        
+        console.log("User updated successfully:", result);
+
+        // Handle technician-specific fields if the role is changed to 'technician'
+        if (data.role === 'technician') {
+            const technicianData = {
+                user_id: id,  // Ensuring correct linkage to the user
+                specialization: data.specialization,
+                experience_level: data.experience_level,
+                status: data.status || 'available',
+                assigned_tasks: data.assigned_tasks || null  // Default to null if no tasks
+            };
+            
+            // Check if a technician record exists for this user
+            Technician.getTechnicianByUserId(id, (techErr, technician) => {
+                if (techErr) {
+                    console.error("Error checking technician existence:", techErr);
+                    return res.status(500).send("Error checking technician existence");
+                }
+
+                if (!technician) {
+                    // Technician record doesn't exist, create a new one
+                    Technician.createTechnician(technicianData, (createErr, createResult) => {
+                        if (createErr) {
+                            console.error("Error creating technician:", createErr);
+                            return res.status(500).send("Error creating technician");
+                        }
+
+                        console.log("Technician created successfully:", createResult);
+                        return res.status(200).send("User updated and technician created successfully");
+                    });
+                } else {
+                    // Technician record exists, update it
+                    Technician.updateTechnicianById(technician.id, technicianData, (updateErr, updateResult) => {
+                        if (updateErr) {
+                            console.error("Error updating technician:", updateErr);
+                            return res.status(500).send("Error updating technician");
+                        }
+
+                        console.log("Technician updated successfully:", updateResult);
+                        return res.status(200).send("User and technician updated successfully");
+                    });
+                }
+            });
+        } else {
+            // If the role is not technician, only update the user
+            return res.status(200).send("User updated successfully");
+        }
+    });
 };
 
 exports.deleteUserById = (req, res) => {
